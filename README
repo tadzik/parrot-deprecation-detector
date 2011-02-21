@@ -1,0 +1,5 @@
+A deprecations detector for Parrot, using api.yaml
+It consist of Deprecations.pm, written in nqp, and test.pir, needed for nqp can't handle command-line arguments (afaik)
+Doesn't work due to some weird YAML::Tiny errors, assistance needed
+
+Run 'make run' to try it out
