@@ -23,7 +23,8 @@ method check_file($file, $yaml) {
         for $api[0] {
             if $_<detection> && $_<detection><regex>
                && $_<detection><regex><pir> {
-                @regexes.push($_<detection><regex><pir>);
+                   my $r := $_<detection><regex><pir>;
+                @regexes.push([Regex::P6Regex::Compiler.compile($r), $r]);
             }
         }
     }
@@ -33,8 +34,9 @@ method check_file($file, $yaml) {
     my $line := 1;
     while $fh.readline -> $l {
         for @regexes -> $regex {
-            if $l ~~ / $regex / {
-                @deprecations.push("$line: $regex");
+            my $r := $regex[0];
+            if $l ~~ / $r / {
+                @deprecations.push("$line: { $regex[1] }");
             }
         }
         $line++;
