@@ -31,9 +31,9 @@ method check_file($file, $yaml) {
     my $fh := pir::new('FileHandle');
     $fh.open($file);
     my $line := 1;
-    while $fh.readline -> $line {
+    while $fh.readline -> $l {
         for @regexes -> $regex {
-            if $line ~~ $regex {
+            if $l ~~ / $regex / {
                 @deprecations.push("$line: $regex");
             }
         }
