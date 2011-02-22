@@ -7,7 +7,7 @@
     $P0 = shift args # fixme, that's dumb
     $S0 = 'api.yaml'
     
-    load_bytecode 'P6object.pbc'
+    load_bytecode "nqp-rx.pbc"
     load_bytecode "Deprecations.pbc"
     $P1 = new 'Deprecations'
     $P1.'check_file'($P0, $S0)
