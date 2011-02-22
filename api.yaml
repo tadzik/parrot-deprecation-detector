@@ -17,7 +17,7 @@
     - 'deprecated'
   detection:
     regex:
-      pir: '^\.sub.+:init.+$'
+      pir: '^ ".sub" .+ ":init"'
 
   ticket:  'https://trac.parrot.org/parrot/ticket/1896'
 -
