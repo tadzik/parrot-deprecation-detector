@@ -10,7 +10,9 @@
     load_bytecode "nqp-rx.pbc"
     load_bytecode "Deprecations.pbc"
     $P1 = new 'Deprecations'
-    $P1.'check_file'($P0, $S0)
+    $P2 = $P1.'check_file'($P0, $S0)
+    $S1 = join "\n", $P2
+    say $S1
 .end
 
 .sub 'foo' :init
