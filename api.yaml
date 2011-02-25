@@ -82,6 +82,9 @@
     - 'deprecated'
     - 'PMC'
   ticket:  'https://trac.parrot.org/parrot/ticket/1892'
+  detection:
+    regex:
+      pir: 'new\s\[?\''Complex\''\]?'
 -
   name:  'Cross-HLL library loading'
   tags: 

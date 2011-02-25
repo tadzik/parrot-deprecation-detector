@@ -24,6 +24,8 @@ fail:
 .end
 
 .sub 'foo' :init
+    $P0 = new 'Complex'
+    $P0 = new ['Complex']
     # ba ba ba
 .end
 
