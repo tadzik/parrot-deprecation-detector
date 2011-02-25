@@ -16,7 +16,7 @@ probably Parrot's C<api.yaml>. Returns a list of warnings (strings).
 method check_file($file, $yaml) {
     my $parser := YAML::Tiny.new;
     my $api := $parser.read_string(slurp($yaml));
-    my @regexes;
+    my @deprs;
     my @deprecations;
 
     if $file ~~ / '.pir' $ / {
@@ -24,7 +24,9 @@ method check_file($file, $yaml) {
             if $_<detection> && $_<detection><regex>
                && $_<detection><regex><pir> {
                    my $r := $_<detection><regex><pir>;
-                @regexes.push([Regex::P6Regex::Compiler.compile($r), $r]);
+                @deprs.push(
+                    [Regex::P6Regex::Compiler.compile($r), $r, $_<name>]
+                );
             }
         }
     }
@@ -33,10 +35,10 @@ method check_file($file, $yaml) {
     $fh.open($file);
     my $line := 1;
     while $fh.readline -> $l {
-        for @regexes -> $regex {
+        for @deprs -> $regex {
             my $r := $regex[0];
             if $l ~~ / $r / {
-                @deprecations.push("$line: { $regex[1] }");
+                @deprecations.push("$line: { $regex[2] }");
             }
         }
         $line++;
