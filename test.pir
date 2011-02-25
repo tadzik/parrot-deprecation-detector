@@ -3,8 +3,10 @@
 
 .sub 'main' :main
     .param pmc args
+    $P1 = shift args
+    $I0 = elements args
+    if $I0 == 0 goto fail
     $P0 = shift args
-    $P0 = shift args # fixme, that's dumb
     $S0 = 'api.yaml'
     
     load_bytecode "nqp-rx.pbc"
@@ -13,6 +15,12 @@
     $P2 = $P1.'check_file'($P0, $S0)
     $S1 = join "\n", $P2
     say $S1
+    .return (0)
+fail:
+    print "Usage: "
+    print $P1
+    say " <file to test>"
+    exit 1
 .end
 
 .sub 'foo' :init
