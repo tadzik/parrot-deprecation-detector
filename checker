@@ -1,19 +1,19 @@
-class Deprecations;
+#!/usr/bin/env parrot-nqp
 
 INIT {
     pir::load_bytecode("YAML/Tiny.pbc");
 }
 
-=begin method
+=begin sub
 
-method check($file_to_check, $deprecations_file) 
+sub check($file_to_check, $deprecations_file) 
 
 Scans $file_to_check for deprecations listen in $deprecations_file,
 probably Parrot's C<api.yaml>. Returns a list of warnings (strings).
 
-=end method
+=end sub
 
-method check_file($file, $yaml) {
+sub check_file($file, $yaml) {
     my $parser := YAML::Tiny.new;
     my $api := $parser.read_string(slurp($yaml));
     my @deprs;
@@ -46,6 +46,20 @@ method check_file($file, $yaml) {
     $fh.close;
 
     return @deprecations;
+}
+
+MAIN(pir::getinterp()[2]);
+sub MAIN(@ARGS) {
+    my $name := @ARGS.shift;
+    if pir::elements(@ARGS) {
+        for @ARGS -> $f {
+            say($f);
+            say(check_file($f, 'api.yaml').join("\n"));
+        }
+    } else {
+        say("Usage:");
+        print($name); say(" <file to check>");
+    }
 }
 
 # vim: ft=perl6
