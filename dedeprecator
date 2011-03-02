@@ -89,7 +89,16 @@ sub MAIN(@ARGS) {
 # check the given files
     for @files -> $f {
         if $f ~~ / '.pir' $ / {
-            say(check_pir($f, @regs_pir).join("\n"));
+            my @d;
+            try {
+                @d := check_pir($f, @regs_pir);
+                CATCH {
+                    say("Failed checking $f: $!");
+                }
+            }
+            if pir::elements(@d) {
+                say(@d.join("\n"));
+            }
         }
     }
 }
