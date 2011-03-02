@@ -4,41 +4,17 @@ INIT {
     pir::load_bytecode("YAML/Tiny.pbc");
 }
 
-=begin sub
-
-sub check($file_to_check, $deprecations_file) 
-
-Scans $file_to_check for deprecations listen in $deprecations_file,
-probably Parrot's C<api.yaml>. Returns a list of warnings (strings).
-
-=end sub
-
-sub check_file($file, $yaml) {
-    my $parser := YAML::Tiny.new;
-    my $api := $parser.read_string(slurp($yaml));
-    my @deprs;
+sub check_pir($file, @regexes) {
     my @deprecations;
-
-    if $file ~~ / '.pir' $ / {
-        for $api[0] {
-            if $_<detection> && $_<detection><regex>
-               && $_<detection><regex><pir> {
-                   my $r := $_<detection><regex><pir>;
-                @deprs.push(
-                    [Regex::P6Regex::Compiler.compile($r), $r, $_<name>]
-                );
-            }
-        }
-    }
 
     my $fh := pir::new('FileHandle');
     $fh.open($file);
     my $line := 1;
     while $fh.readline -> $l {
-        for @deprs -> $regex {
+        for @regexes -> $regex {
             my $r := $regex[0];
             if $l ~~ / $r / {
-                @deprecations.push("$line: { $regex[2] }");
+                @deprecations.push("$file:$line: { $regex[2] }");
             }
         }
         $line++;
@@ -51,15 +27,58 @@ sub check_file($file, $yaml) {
 MAIN(pir::getinterp()[2]);
 sub MAIN(@ARGS) {
     my $name := @ARGS.shift;
-    if pir::elements(@ARGS) {
-        for @ARGS -> $f {
-            say($f);
-            say(check_file($f, 'api.yaml').join("\n"));
+    my @files;
+    my $apiyaml := 'api.yaml';
+    USAGE($name) unless pir::elements(@ARGS);
+# getopt
+    my $arg;
+    while pir::elements(@ARGS) {
+        $arg := @ARGS.shift;
+        if $arg eq '--help' || $arg eq '-h' {
+            USAGE($name);
+        } elsif $arg eq '--apiyaml' {
+            unless pir::elements(@ARGS) {
+                say("--apiyaml requires an argument");
+                USAGE($name);
+            }
+            $apiyaml := @ARGS.shift;
+        } else {
+            @files.push($arg);
         }
-    } else {
-        say("Usage:");
-        print($name); say(" <file to check>");
     }
+# prepare the regexes
+    my $parser := YAML::Tiny.new;
+    my $api;
+    try {
+        $api := $parser.read_string(slurp($apiyaml));
+        CATCH {
+            say("Failed parsing '$apiyaml'\n"
+                ~ "Make sure that it exists and is a valid YAML");
+            pir::exit(1);
+        }
+    }
+    my @regs_pir;
+    for $api[0] {
+        if $_<detection> && $_<detection><regex> {
+           if $_<detection><regex><pir> {
+               my $r := $_<detection><regex><pir>;
+                @regs_pir.push(
+                    [Regex::P6Regex::Compiler.compile($r), $r, $_<name>]
+                );
+           }
+        }
+    }
+# check the given files
+    for @files -> $f {
+        if $f ~~ / '.pir' $ / {
+            say(check_pir($f, @regs_pir).join("\n"));
+        }
+    }
+}
+
+sub USAGE($name) {
+    say("Usage: $name [--apiyaml <api.yaml file>] <files to check>");
+    pir::exit(1);
 }
 
 # vim: ft=perl6
