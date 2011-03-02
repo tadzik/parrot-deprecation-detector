@@ -2,6 +2,7 @@
 
 INIT {
     pir::load_bytecode("YAML/Tiny.pbc");
+    pir::loadlib("os");
 }
 
 sub check_pir($file, @regexes) {
@@ -29,7 +30,6 @@ sub MAIN(@ARGS) {
     my $name := @ARGS.shift;
     my @files;
     my $apiyaml := 'api.yaml';
-    USAGE($name) unless pir::elements(@ARGS);
 # getopt
     my $arg;
     while pir::elements(@ARGS) {
@@ -68,6 +68,24 @@ sub MAIN(@ARGS) {
            }
         }
     }
+# if no files are given, find all files in the current directory,
+# recursively
+    unless pir::elements(@files) {
+        my $os := pir::new('OS');
+        my @candidates := $os.readdir('.');
+        while pir::elements(@candidates) {
+            my $file := @candidates.shift;
+            # this probably can be written better
+            next if $file ~~ /[^ '.' $] | [^ '..' $]
+                              | ['/..' $] | ['/.' $]/;
+            @files.push($file);
+            try { # try is isdir said funny
+                for $os.readdir($file) {
+                    @candidates.push("$file/$_");
+                }
+            }
+        }
+    }
 # check the given files
     for @files -> $f {
         if $f ~~ / '.pir' $ / {
@@ -77,7 +95,7 @@ sub MAIN(@ARGS) {
 }
 
 sub USAGE($name) {
-    say("Usage: $name [--apiyaml <api.yaml file>] <files to check>");
+    say("Usage: $name [--apiyaml <api.yaml file>] [<files to check>]");
     pir::exit(1);
 }
 
