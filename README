@@ -1,5 +1,13 @@
-A deprecations detector for Parrot, using api.yaml
-It consist of Deprecations.pm, written in nqp, and test.pir, needed for nqp can't handle command-line arguments (afaik)
-Doesn't work due to some weird YAML::Tiny errors, assistance needed
+dedepracator: find deprecations in your Parrot code
 
-Run 'make run' to try it out
+This script, fed with a yaml file with Parrot deprecations
+(you probably want it to be Parrot's api.yaml), will scan your code
+for a deprecations and warn you about them.
+
+Usage:
+
+# scan test.pir for deprecations, using api.yaml
+$ dedeprecator test.pir
+
+# scan bar.pir and baz.pir using the alternate api.yaml file
+$ dedeprecator --apiyaml /somewhere/else/foo.yaml bar.pir baz.pir
