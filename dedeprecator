@@ -10,6 +10,7 @@ sub check_pir($file, @regexes) {
 
     my $fh := pir::new('FileHandle');
     $fh.open($file);
+    $fh.encoding('utf8');
     my $line := 1;
     while $fh.readline -> $l {
         for @regexes -> $regex {
